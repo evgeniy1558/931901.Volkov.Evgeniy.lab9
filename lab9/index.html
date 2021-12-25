@@ -1,0 +1,218 @@
+﻿<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title></title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        div,
+        button {
+            font-size: 2rem;
+        }
+
+        .calc {
+            border: 5px solid deepskyblue;
+            padding: 20px;
+            width: 400px;
+            display: grid;
+            grid-template-columns: repeat(5, 80px);
+            grid-template-rows: repeat(5, 80px);
+        }
+
+        .calc button {
+            cursor: pointer;
+            font-size: 2rem;
+            outline: none;
+            margin: 4px;
+        }
+
+        .calc button:hover {
+            background-color: #dbffd3;
+        }
+
+        .rowSpan {
+            grid-row: span 2;
+        }
+
+        .colSpan {
+            grid-column: span 2;
+        }
+
+        .colSpanBig {
+            grid-column: span 5;
+        }
+
+        .result {
+            border: 1px solid black;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin: 4px;
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+
+        .prev {
+            color: gray;
+            font-weight: bold;
+            padding: 0 10px;
+        }
+
+        .current {
+            font-weight: bold;
+            padding-right: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="calc">
+    <div class="result colSpanBig">
+        <div class="prev"></div>
+        <div class="current">0</div>
+    </div>
+    <button class="number">7</button>
+    <button class="number">8</button>
+    <button class="number">9</button>
+    <button class="operation">/</button>
+    <button class="clear">C</button>
+    <button class="number">4</button>
+    <button class="number">5</button>
+    <button class="number">6</button>
+    <button class="operation">*</button>
+    <button class="deleteButton"><-</button>
+    <button class="number">1</button>
+    <button class="number">2</button>
+    <button class="number">3</button>
+    <button class="operation">-</button>
+    <button class="operation equalButton rowSpan">=</button>
+    <button class="number colSpan">0</button>
+    <button class="number">.</button>
+    <button class="operation">+</button>
+</div>
+<script>
+    let prevSymbol;
+    let currentSymbol;
+    let operation;
+
+
+    function clear() {
+        currentSymbol = '0';
+        prevSymbol = '';
+        operation = undefined;
+    }
+
+
+    function remove() {
+     
+        currentSymbol = currentSymbol.toString().slice(0, -1);
+    }
+
+
+    function addNumber(number) {
+        if (number === '.' && currentSymbol.includes('.')) return;
+        currentSymbol = currentSymbol.toString() + number.toString();
+    }
+    function chooseOperation(chosenOperation) {
+        if (currentSymbol === '') return;
+        if (prevSymbol !== '') {
+            count();
+        }
+        operation = chosenOperation;
+        prevSymbol = currentSymbol;
+        currentSymbol = '';
+    }
+    function count() {
+        let calc;
+        const prev = parseFloat(prevSymbol);
+        const current = parseFloat(currentSymbol);
+        switch (operation) {
+            case '+':
+                calc = prev + current;
+                break;
+            case '-':
+                calc = prev - current;
+                break;
+            case '*':
+                calc = prev * current;
+                break;
+            case '/':
+                calc = prev / current;
+                break;
+            default:
+                return;
+        }
+        currentSymbol = calc;
+        operation = undefined;
+        prevSymbol = '';
+    }
+    function displaySymbol(number) {
+        const intSymbols = parseFloat(number.toString().split('.')[0]);
+        const floatSymbols = number.toString().split('.')[1];
+        let displayedSymbols;
+        if (isNaN(intSymbols)) {
+            displayedSymbols = '';
+        } else {
+            displayedSymbols = intSymbols.toLocaleString('ru', {maximumFractionDigits: 0});
+        }
+        if (floatSymbols != null) {
+            return `${displayedSymbols}.${floatSymbols}`;
+        } else {
+            return displayedSymbols;
+        }
+    }
+    function saveState() {
+        currentField.innerText = displaySymbol(currentSymbol);
+        if (operation != null) {
+            if (operation !== '=') {
+                prevField.innerText = `${displaySymbol(prevSymbol)} ${operation}`;
+            } else {
+                prevField.innerText = `${displaySymbol(prevSymbol)}`;
+            }
+        } else {
+            prevField.innerText = '';
+        }
+    }
+    const numbers = document.querySelectorAll('.number');
+    const operations = document.querySelectorAll('.operation');
+    const equalButton = document.querySelector('.equalButton');
+    const deleteButton = document.querySelector('.deleteButton');
+    const clearButton = document.querySelector('.clear');
+    let prevField = document.querySelector('.prev');
+    let currentField = document.querySelector('.current');
+    clear();
+    for (let i = 0; i < numbers.length; i += 1) {
+        numbers[i].addEventListener('click', () => {
+            addNumber(numbers[i].innerText);
+            saveState();
+        })
+    }
+
+    for (let i = 0; i < operations.length; i += 1) {
+        operations[i].addEventListener('click', () => {
+            chooseOperation(operations[i].innerText);
+            saveState();
+        })
+    }
+
+    equalButton.addEventListener('click', e => {
+        count();
+        saveState();
+    })
+
+    clearButton.addEventListener('click', e => {
+        clear();
+        saveState();
+    })
+
+    deleteButton.addEventListener('click', e => {
+        remove();
+        saveState();
+    })
+</script>
+</body>
+</html>
